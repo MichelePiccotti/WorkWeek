@@ -49,7 +49,7 @@ class AddRecordActivity : AppCompatActivity() {
                 typeDropdown.setAdapter(adapter)
 
                 typeDropdown.setOnItemClickListener { _, _, position, _ ->
-                    selectedTypeId = typesFromDb[position].typeId
+                    selectedTypeId = typesFromDb[position].id
                 }
             }
         }

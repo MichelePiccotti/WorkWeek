@@ -9,7 +9,7 @@ data class WorkRecordWithType(
 
     @Relation(
         parentColumn = "typeId",    // Il nome della colonna in WorkRecord
-        entityColumn = "typeId"     // Il nome della colonna in WorkType
+        entityColumn = "id"     // Il nome della colonna in WorkType
     )
     val workType: WorkType
 )

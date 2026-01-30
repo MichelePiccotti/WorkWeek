@@ -11,7 +11,7 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = WorkType::class,           // Tabella a cui puntiamo
-            parentColumns = ["typeId"],         // Colonna nella tabella WorkType
+            parentColumns = ["id"],         // Colonna nella tabella WorkType
             childColumns = ["typeId"],          // Colonna in questa tabella (WorkRecord)
             onDelete = ForeignKey.CASCADE      // Se elimino un tipo, elimina i record collegati
         )
