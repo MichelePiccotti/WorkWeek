@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "name": "Lavoro",
+    "colorHex": "#2196F3",
+    "isDefault": true
+  },
+  {
+    "id": 10,
+    "name": "Ferie",
+    "colorHex": "#d5eb34"
+  },
+  {
+    "id": 11,
+    "name": "Permesso",
+    "colorHex": "#d5eb34"
+  },
+  {
+    "id": 12,
+    "name": "Malattia",
+    "colorHex": "#eb7134"
+  },
+  {
+    "id": 13,
+    "name": "Infortunio",
+    "colorHex": "#eb7134"
+  },
+  {
+  "id": 14,
+  "name": "Festività",
+  "colorHex": "#34eb98"
+  }
+
+]

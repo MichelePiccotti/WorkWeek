@@ -7,16 +7,26 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.text.SimpleDateFormat
 import java.util.*
+import android.util.Log
 
 class WorkAdapter(private var items: List<WorkRecordWithType>) :
     RecyclerView.Adapter<WorkAdapter.ViewHolder>() {
 
+    var onItemLongClick: ((WorkRecordWithType) -> Unit)? = null
+
     // Questa classe descrive come sono fatti gli elementi grafici di una riga
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvTypeName: TextView = view.findViewById(R.id.tvTypeName)
         val tvDate: TextView = view.findViewById(R.id.tvDate)
         val tvHours: TextView = view.findViewById(R.id.tvHours)
         val viewColor: View = view.findViewById(R.id.viewColorTag)
+
+        init {
+            itemView.setOnLongClickListener {
+                onItemLongClick?.invoke(items[adapterPosition])
+                true
+            }
+        }
     }
 
     // Crea fisicamente la riga partendo dal file XML item_work_record
@@ -33,9 +43,14 @@ class WorkAdapter(private var items: List<WorkRecordWithType>) :
         holder.tvTypeName.text = item.workType.name
         holder.tvHours.text = "${item.record.hours}h"
 
-        // Trasforma il timestamp (Long) in una data leggibile (es. 28/01/2026)
+        // Data leggibile
         val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-        holder.tvDate.text = sdf.format(Date(item.record.date))
+        val dateMillis = item.record.date
+        holder.tvDate.text = try {
+            sdf.format(Date(dateMillis))
+        } catch (e: Exception) {
+            "??/??/????"
+        }
 
         // Qui impostiamo il colore che abbiamo salvato nel database
         try {
@@ -43,13 +58,19 @@ class WorkAdapter(private var items: List<WorkRecordWithType>) :
         } catch (e: Exception) {
             holder.viewColor.background.setTint(android.graphics.Color.GRAY)
         }
+        println("DEBUG: WorkAdapterBinder ${item.workType.name} ${item.record.hours}h  date=${item.record.date}")
     }
 
-    override fun getItemCount() = items.size
+    override fun getItemCount(): Int {
+        println("DEBUG: WorkAdapterGetItemCount new items ${items.size}")
+        return items.size
+    }
 
     // Funzione fondamentale per aggiornare la lista quando aggiungi un record
     fun updateData(newItems: List<WorkRecordWithType>) {
         items = newItems
         notifyDataSetChanged()
+        println("DEBUG: WorkAdapterUpdateData new items ${newItems.size}")
     }
+
 }

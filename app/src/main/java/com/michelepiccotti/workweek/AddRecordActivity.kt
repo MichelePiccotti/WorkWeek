@@ -1,6 +1,7 @@
 package com.michelepiccotti.workweek
 
 import android.app.DatePickerDialog
+import android.graphics.Typeface
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
@@ -19,20 +20,50 @@ class AddRecordActivity : AppCompatActivity() {
 
     private lateinit var db: AppDatabase
     private var selectedTypeId: Int = -1
-    private var selectedDate: Long = System.currentTimeMillis() // Default: oggi
+    private var selectedDate: Long = System.currentTimeMillis()
+    private var today = Calendar.getInstance()
+    private val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_record)
+        val etDate = findViewById<TextInputEditText>(R.id.etDate)
+
+        // mostra subito la data selezionata (oggi di default)
+        etDate.setText(sdf.format(Date(selectedDate)))
+        etDate.setOnClickListener {
+            val calendar = Calendar.getInstance().apply {
+                timeInMillis = selectedDate
+            }
+
+            DatePickerDialog(
+                this,
+                { _, year, month, day ->
+                    calendar.set(year, month, day)
+                    selectedDate = calendar.timeInMillis   // 🎯 QUI POPOLI selectedDate
+                    etDate.setText(sdf.format(calendar.time))
+
+                    if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR)
+                        && calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
+                        //etDate.setBackgroundColor(resources.getColor(R.color.black))
+                        etDate.setTypeface(null, Typeface.BOLD)
+                    } else {
+                        //etDate.setBackgroundColor(resources.getColor(R.color.light_green))
+                        etDate.setTypeface(null, Typeface.NORMAL)
+                    }
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
 
         db = AppDatabase.getDatabase(this)
 
         val etHours = findViewById<TextInputEditText>(R.id.etHours)
+        etHours.setText("8")
         val btnSave = findViewById<Button>(R.id.btnSave)
         val typeDropdown = findViewById<AutoCompleteTextView>(R.id.typeDropdown)
-
-        // Formattatore per mostrare la data in modo leggibile
-        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
         // 1. Carichiamo i tipi dal Database per popolare il menu a tendina
         lifecycleScope.launch {
@@ -47,6 +78,13 @@ class AddRecordActivity : AppCompatActivity() {
                     typesFromDb.map { it.name }
                 )
                 typeDropdown.setAdapter(adapter)
+
+                // POPOLARE IL VALORE DI DEFAULT
+                val defaultType = typesFromDb.firstOrNull { it.isDefault }
+                if (defaultType != null) {
+                    selectedTypeId = defaultType.id
+                    typeDropdown.setText(defaultType.name, false)
+                }
 
                 typeDropdown.setOnItemClickListener { _, _, position, _ ->
                     selectedTypeId = typesFromDb[position].id

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
+    android:minHeight="72dp"
+    app:cardUseCompatPadding="true"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -7,7 +9,7 @@
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="6dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,17 +18,18 @@
         android:padding="16dp"
         android:gravity="center_vertical">
 
+        <!-- Tag colore -->
         <View
             android:id="@+id/viewColorTag"
             android:layout_width="12dp"
             android:layout_height="12dp"
-            android:background="@drawable/circle_shape" />
+            android:background="@android:color/darker_gray"
+            android:layout_marginEnd="16dp"/>
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginStart="16dp"
             android:orientation="vertical">
 
             <TextView
@@ -44,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:text="28/01/2026"
                 android:textSize="13sp"
-                android:alpha="0.7"/>
+                android:textColor="?attr/colorOnSurface"/>
         </LinearLayout>
 
         <TextView
@@ -54,7 +57,6 @@
             android:text="8.0h"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="?attr/colorPrimary"/>
-
+            android:textColor="?attr/colorOnSurface"/>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
