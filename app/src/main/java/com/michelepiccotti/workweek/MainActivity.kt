@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.widget.TextView
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var rvWorkRecords: RecyclerView
     private lateinit var fabAddRecord: FloatingActionButton
+    private lateinit var btCalendarView : Button
     private lateinit var etStartDate: TextInputEditText
     private lateinit var etEndDate: TextInputEditText
     private lateinit var adapter: WorkAdapter
@@ -28,7 +30,6 @@ class MainActivity : AppCompatActivity() {
     private var endDateCalendar: Calendar? = null
     private lateinit var tvTotalHours: TextView
 
-    // 🔁 Ricezione risultato da AddRecordActivity
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         etStartDate = findViewById(R.id.etStartDate)
         etEndDate = findViewById(R.id.etEndDate)
         tvTotalHours = findViewById(R.id.tvTotalHours)
+        btCalendarView = findViewById(R.id.btCalendarView)
 
         // RecyclerView
         adapter = WorkAdapter(emptyList())
@@ -110,6 +112,11 @@ class MainActivity : AppCompatActivity() {
                 putExtra("startDate", startDateCalendar?.timeInMillis ?: 0L)
                 putExtra("endDate", endDateCalendar?.timeInMillis ?: 0L)
             }
+            startActivity(intent)
+        }
+
+        btCalendarView.setOnClickListener {
+            val intent = Intent(this, CalendarActivity::class.java)
             startActivity(intent)
         }
         loadRecords()

@@ -33,4 +33,10 @@ interface WorkDao {
         GROUP BY t.id, t.name, t.colorHex
     """)
     suspend fun getHoursSumByTypeWithName(startDate: Long, endDate: Long): List<HoursByType>
+    @Query("SELECT * FROM work_records ORDER BY date ASC")
+    suspend fun getAllRecords(): List<WorkRecord>
+    @Query("SELECT * FROM work_types WHERE id = :typeId LIMIT 1")
+    suspend fun getTypeById(typeId: Int): WorkType?
+    @Query("SELECT * FROM work_types")
+    suspend fun getAllWorkTypes(): List<WorkType>
 }

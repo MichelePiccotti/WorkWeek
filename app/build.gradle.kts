@@ -51,20 +51,19 @@ dependencies {
     implementation("com.google.android.material:material:1.13.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
-    val room_version = "2.6.1"
+    val room_version = "2.8.4"
 
     // Room Database
     implementation("androidx.room:room-runtime:$room_version")
     implementation("androidx.room:room-ktx:$room_version")
     kapt("androidx.room:room-compiler:$room_version")
 
-    // Material Components per design moderno
     implementation("com.google.android.material:material:1.11.0")
-
-    // Lifecycle (per ViewModel e LiveData)
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("androidx.recyclerview:recyclerview:1.3.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.9.0")
+    implementation("com.kizitonwose.calendar:view:2.7.0")
 }
