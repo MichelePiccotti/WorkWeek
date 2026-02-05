@@ -1,69 +1,109 @@
 package com.michelepiccotti.workweek
 
 import android.app.DatePickerDialog
-import android.widget.TextView
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.TextInputEditText
-import java.util.Calendar
-import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
+import androidx.core.view.WindowCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import android.view.View
 
-class MainActivity : AppCompatActivity() {
+
+class ActivityMain : AppCompatActivity() {
 
     private lateinit var rvWorkRecords: RecyclerView
     private lateinit var fabAddRecord: FloatingActionButton
-    private lateinit var btCalendarView : Button
+    private lateinit var fabCalendarView: FloatingActionButton
     private lateinit var etStartDate: TextInputEditText
     private lateinit var etEndDate: TextInputEditText
+    private lateinit var tvTotalHours: TextView
     private lateinit var adapter: WorkAdapter
+
     private var startDateCalendar: Calendar? = null
     private var endDateCalendar: Calendar? = null
-    private lateinit var tvTotalHours: TextView
 
+    private var currentRecords: List<WorkRecordWithType> = emptyList()
 
+    private val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
+    private val addRecordLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                loadRecords()
+            }
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+
 
         rvWorkRecords = findViewById(R.id.rvWorkRecords)
         fabAddRecord = findViewById(R.id.fabAddRecord)
         etStartDate = findViewById(R.id.etStartDate)
         etEndDate = findViewById(R.id.etEndDate)
         tvTotalHours = findViewById(R.id.tvTotalHours)
-        btCalendarView = findViewById(R.id.btCalendarView)
+        fabCalendarView = findViewById(R.id.fabCalendarView)
 
-        // RecyclerView
+        val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
+        setSupportActionBar(toolbar)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+
+        val root = findViewById<View>(R.id.rootLayout)
+
+        ViewCompat.setOnApplyWindowInsetsListener(root) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+
+            view.setPadding(
+                view.paddingLeft,
+                systemBars.top,      // status bar
+                view.paddingRight,
+                systemBars.bottom    // navigation bar
+            )
+
+            insets
+        }
+
+
         adapter = WorkAdapter(emptyList())
         rvWorkRecords.layoutManager = LinearLayoutManager(this)
         rvWorkRecords.adapter = adapter
+
         adapter.onItemLongClick = { item ->
-            // Mostra un dialog con opzioni Modifica / Cancella
             val options = arrayOf("Modifica", "Cancella")
             androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("Seleziona azione")
-                .setItems(options) { dialog, which ->
+                .setItems(options) { _, which ->
                     when (which) {
-                        0 -> editRecord(item)    // Modifica
-                        1 -> deleteRecord(item)  // Cancella
+                        0 -> editRecord(item)
+                        1 -> deleteRecord(item)
                     }
                 }
                 .show()
         }
 
         lifecycleScope.launch {
-            val db = AppDatabase.getDatabase(this@MainActivity)
-            DataSeeder.seedWorkTypes(this@MainActivity, db)
+            val db = AppDatabase.getDatabase(this@ActivityMain)
+            DataSeeder.seedWorkTypes(this@ActivityMain, db)
         }
 
         val today = Calendar.getInstance().apply {
@@ -77,15 +117,14 @@ class MainActivity : AppCompatActivity() {
             timeInMillis = today.timeInMillis
             add(Calendar.DAY_OF_MONTH, -7)
         }
-        // Imposta date di default nei TextInputEditText
-        val sdf = java.text.SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
         etStartDate.setText(sdf.format(sevenDaysAgo.time))
         startDateCalendar = sevenDaysAgo
         etEndDate.setText(sdf.format(today.time))
         endDateCalendar = today
 
         etStartDate.setOnClickListener {
-            showDatePicker(null, maxDate = today) { date, calendar ->
+            showDatePicker(null, today) { date, calendar ->
                 etStartDate.setText(date)
                 startDateCalendar = calendar
                 loadRecords()
@@ -93,32 +132,33 @@ class MainActivity : AppCompatActivity() {
         }
 
         etEndDate.setOnClickListener {
-            showDatePicker(minDate = startDateCalendar, maxDate = today) { date, calendar ->
+            showDatePicker(startDateCalendar, today) { date, calendar ->
                 etEndDate.setText(date)
                 endDateCalendar = calendar
+                loadRecords()
             }
-            loadRecords()
         }
 
-        // FAB per aggiungere nuovo record
         fabAddRecord.setOnClickListener {
-            val intent = Intent(this, AddRecordActivity::class.java)
+            val intent = Intent(this, ActivityAddRecord::class.java)
             intent.putExtra("todayMillis", today.timeInMillis)
             addRecordLauncher.launch(intent)
         }
 
         tvTotalHours.setOnClickListener {
-            val intent = Intent(this, SummaryActivity::class.java).apply {
+            val intent = Intent(this, ActivitySummary::class.java).apply {
                 putExtra("startDate", startDateCalendar?.timeInMillis ?: 0L)
                 putExtra("endDate", endDateCalendar?.timeInMillis ?: 0L)
             }
             startActivity(intent)
         }
 
-        btCalendarView.setOnClickListener {
-            val intent = Intent(this, CalendarActivity::class.java)
-            startActivity(intent)
+        fabCalendarView.setOnClickListener {
+            startActivity(Intent(this, ActivityCalendar::class.java))
         }
+
+        NotificationUtils.createNotificationChannel(this)
+
         loadRecords()
     }
 
@@ -127,34 +167,24 @@ class MainActivity : AppCompatActivity() {
         loadRecords()
     }
 
-    private val addRecordLauncher =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            if (it.resultCode == RESULT_OK) {
-                loadRecords()
-            }
-        }
     private fun loadRecords() {
         val db = AppDatabase.getDatabase(this)
-
-        // Calcola intervallo date
         val start = startDateCalendar?.timeInMillis ?: 0L
-        val end = endDateCalendar?.timeInMillis  ?: 0L
+        val end = endDateCalendar?.timeInMillis?.plus(172800000) ?: 0L
 
         lifecycleScope.launch {
             val records = withContext(Dispatchers.IO) {
                 db.workDao().getRecordsBetweenDates(start, end)
             }
-            println("DEBUG: Caricati ${records.size} record da $start a $end")
+            currentRecords = records
+            adapter.updateData(records)
 
-            adapter.updateData(records) // ora ogni item ha record + workType
-
-            // CALCOLO DEL TOTALE ORE
             val totalHours = records.sumOf { it.record.hours.toDouble() }
             tvTotalHours.text = "Totale ore: %.2f".format(totalHours)
         }
     }
 
-    public fun showDatePicker(
+    fun showDatePicker(
         minDate: Calendar? = null,
         maxDate: Calendar? = null,
         onDateSelected: (String, Calendar) -> Unit
@@ -176,17 +206,14 @@ class MainActivity : AppCompatActivity() {
             calendar.get(Calendar.DAY_OF_MONTH)
         )
 
-        minDate?.let {
-            datePicker.datePicker.minDate = it.timeInMillis
-        }
-        maxDate?.let {
-            datePicker.datePicker.maxDate = it.timeInMillis
-        }
+        minDate?.let { datePicker.datePicker.minDate = it.timeInMillis }
+        maxDate?.let { datePicker.datePicker.maxDate = it.timeInMillis }
 
         datePicker.show()
     }
+
     private fun editRecord(item: WorkRecordWithType) {
-        val intent = Intent(this, AddRecordActivity::class.java)
+        val intent = Intent(this, ActivityAddRecord::class.java)
         intent.putExtra("recordId", item.record.id)
         addRecordLauncher.launch(intent)
     }
@@ -195,10 +222,69 @@ class MainActivity : AppCompatActivity() {
         val db = AppDatabase.getDatabase(this)
         lifecycleScope.launch(Dispatchers.IO) {
             db.workDao().delete(item.record)
-            // ricarica lista sul thread principale
             withContext(Dispatchers.Main) {
                 loadRecords()
             }
         }
     }
+
+    // ---------- MENU ----------
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.menu_export_csv -> exportCsv()
+            R.id.menu_export_pdf -> exportPdf()
+            R.id.menu_settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun exportCsv() {
+        if (currentRecords.isEmpty()) {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setMessage("Nessun dato da esportare.")
+                .setPositiveButton("OK", null)
+                .show()
+            return
+        }
+
+        val file = CsvUtils.exportCsv(this, currentRecords)
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Export CSV")
+            .setMessage("File salvato in:\n${file.absolutePath}")
+            .setPositiveButton("OK", null)
+            .show()
+    }
+
+    private fun exportPdf() {
+        if (currentRecords.isEmpty()) {
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setMessage("Nessun dato da esportare.")
+                .setPositiveButton("OK", null)
+                .show()
+            return
+        }
+
+        val sb = StringBuilder()
+        sb.append("Riepilogo ore\n\n")
+        currentRecords.forEach {
+            val dateStr = sdf.format(it.record.date)
+            sb.append("$dateStr - ${it.workType.name}: ${it.record.hours} ore\n")
+        }
+
+        val file = PdfExporter.exportSummary(this, sb.toString())
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Export PDF")
+            .setMessage("PDF salvato in:\n${file.absolutePath}")
+            .setPositiveButton("OK", null)
+            .show()
+    }
 }
+

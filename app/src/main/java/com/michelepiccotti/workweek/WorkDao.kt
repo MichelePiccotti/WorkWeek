@@ -1,25 +1,25 @@
 package com.michelepiccotti.workweek
 
-import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.Query
+import androidx.room.Transaction
 
 @Dao
 interface WorkDao {
+
     @Insert
     suspend fun insertRecord(record: WorkRecord)
+
     @Delete
     suspend fun delete(record: WorkRecord)
 
-    // Inserisce un nuovo tipo (Lavoro, Ferie, etc.)
     @Insert
     suspend fun insertType(type: WorkType)
+
     @Query("SELECT * FROM work_types")
     suspend fun getAllTypes(): List<WorkType>
-
-    // Recupera i record uniti ai loro tipi (per vedere il nome invece dell'ID)
-    @Transaction
-    @Query("SELECT * FROM work_records ORDER BY date DESC")
-    fun getRecordsWithType(): LiveData<List<WorkRecordWithType>>
 
     @Transaction
     @Query("SELECT * FROM work_records WHERE date BETWEEN :start AND :end ORDER BY date DESC")
@@ -33,10 +33,13 @@ interface WorkDao {
         GROUP BY t.id, t.name, t.colorHex
     """)
     suspend fun getHoursSumByTypeWithName(startDate: Long, endDate: Long): List<HoursByType>
+
     @Query("SELECT * FROM work_records ORDER BY date ASC")
     suspend fun getAllRecords(): List<WorkRecord>
+
     @Query("SELECT * FROM work_types WHERE id = :typeId LIMIT 1")
     suspend fun getTypeById(typeId: Int): WorkType?
+
     @Query("SELECT * FROM work_types")
     suspend fun getAllWorkTypes(): List<WorkType>
 }

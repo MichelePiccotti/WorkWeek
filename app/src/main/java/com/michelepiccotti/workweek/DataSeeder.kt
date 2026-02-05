@@ -10,15 +10,14 @@ object DataSeeder {
 
     suspend fun seedWorkTypes(context: Context, db: AppDatabase) {
         withContext(Dispatchers.IO) {
-            val workTypeCount = db.workDao().getAllTypes().size
-            if (workTypeCount == 0) {
+            val count = db.workDao().getAllTypes().size
+            if (count == 0) {
                 val json = context.assets.open("work_types.json")
                     .bufferedReader()
                     .use { it.readText() }
 
                 val type = object : TypeToken<List<WorkType>>() {}.type
                 val workTypes: List<WorkType> = Gson().fromJson(json, type)
-
                 workTypes.forEach { db.workDao().insertType(it) }
             }
         }

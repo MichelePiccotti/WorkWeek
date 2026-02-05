@@ -21,7 +21,8 @@ import java.time.LocalDate
 import java.time.YearMonth
 import java.time.ZoneId
 
-class CalendarActivity : AppCompatActivity() {
+
+class ActivityCalendar : AppCompatActivity() {
 
     private lateinit var calendarView: CalendarView
     private lateinit var db: AppDatabase
@@ -33,10 +34,19 @@ class CalendarActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_calendar)
 
+        val tvMonthTitle = findViewById<TextView>(R.id.tvMonthTitle)
+
+        // INIZIALIZZA PRIMA DI USARE
         calendarView = findViewById(R.id.calendarView)
+
+        calendarView.monthScrollListener = { month ->
+            val title = month.yearMonth.month.name.lowercase().replaceFirstChar { it.uppercase() } +
+                    " " + month.yearMonth.year
+            tvMonthTitle.text = title
+        }
+
         db = AppDatabase.getDatabase(this)
 
-        // carica dati dal DB
         lifecycleScope.launch {
             records = withContext(Dispatchers.IO) {
                 db.workDao().getAllRecords()
@@ -44,22 +54,20 @@ class CalendarActivity : AppCompatActivity() {
             workTypes = withContext(Dispatchers.IO) {
                 db.workDao().getAllWorkTypes().associateBy { it.id }
             }
-
             setupCalendar()
         }
     }
 
+
     private fun setupCalendar() {
         val zoneId = ZoneId.systemDefault()
 
-        // calcola ore totali per ogni giorno
         val dayTotals: Map<LocalDate, Double> = records.groupBy {
-            Instant.ofEpochMilli(it.date)
-                .atZone(zoneId)
-                .toLocalDate()
-        }.mapValues { it.value.sumOf { rec -> rec.hours.toDouble() } }
+            Instant.ofEpochMilli(it.date).atZone(zoneId).toLocalDate()
+        }.mapValues { entry ->
+            entry.value.sumOf { rec -> rec.hours.toDouble() }
+        }
 
-        // imposta intervallo di mesi
         val currentMonth = YearMonth.now()
         val startMonth = currentMonth.minusMonths(6)
         val endMonth = currentMonth.plusMonths(6)
@@ -67,9 +75,7 @@ class CalendarActivity : AppCompatActivity() {
         calendarView.setup(startMonth, endMonth, DayOfWeek.MONDAY)
         calendarView.scrollToMonth(currentMonth)
 
-        // binder dei giorni
         calendarView.dayBinder = object : MonthDayBinder<DayViewContainer> {
-
             override fun create(view: View) = DayViewContainer(view)
 
             override fun bind(container: DayViewContainer, day: CalendarDay) {
@@ -85,9 +91,9 @@ class CalendarActivity : AppCompatActivity() {
                 val total = dayTotals[day.date] ?: 0.0
                 val color = when {
                     total == 0.0 -> Color.TRANSPARENT
-                    total <= 4 -> Color.parseColor("#FFCDD2") // rosso chiaro
-                    total <= 8 -> Color.parseColor("#FFF9C4") // giallo
-                    else -> Color.parseColor("#C8E6C9") // verde chiaro
+                    total <= 4 -> Color.parseColor("#FFCDD2")
+                    total <= 8 -> Color.parseColor("#FFF9C4")
+                    else -> Color.parseColor("#C8E6C9")
                 }
 
                 container.view.setBackgroundColor(color)
@@ -119,9 +125,7 @@ class CalendarActivity : AppCompatActivity() {
             .show()
     }
 
-    // contenitore per la view del giorno
     class DayViewContainer(view: View) : ViewContainer(view) {
         val textView: TextView = view.findViewById(R.id.tvDay)
     }
 }
-

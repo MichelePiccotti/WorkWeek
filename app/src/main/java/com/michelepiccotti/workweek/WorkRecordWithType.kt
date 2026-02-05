@@ -6,10 +6,9 @@ import androidx.room.Relation
 data class WorkRecordWithType(
     @Embedded
     val record: WorkRecord,
-
     @Relation(
-        parentColumn = "typeId",    // Il nome della colonna in WorkRecord
-        entityColumn = "id"     // Il nome della colonna in WorkType
+        parentColumn = "typeId",
+        entityColumn = "id"
     )
     val workType: WorkType
 )

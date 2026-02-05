@@ -5,7 +5,10 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [WorkRecord::class, WorkType::class], version = 2)
+@Database(
+    entities = [WorkRecord::class, WorkType::class],
+    version = 2
+)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun workDao(): WorkDao
 

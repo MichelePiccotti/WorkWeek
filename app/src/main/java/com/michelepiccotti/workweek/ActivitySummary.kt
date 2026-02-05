@@ -1,7 +1,6 @@
 package com.michelepiccotti.workweek
 
 import android.os.Bundle
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -10,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class SummaryActivity : AppCompatActivity() {
+class ActivitySummary : AppCompatActivity() {
 
     private lateinit var db: AppDatabase
     private lateinit var recyclerView: RecyclerView
@@ -26,20 +25,14 @@ class SummaryActivity : AppCompatActivity() {
         adapter = SummaryAdapter()
         recyclerView.adapter = adapter
 
-        val startDate = intent.getLongExtra("startDate", 0)
-        val endDate = intent.getLongExtra("endDate", System.currentTimeMillis())
+        val startDate = intent.getLongExtra("startDate", 0L)
+        val endDate = intent.getLongExtra("endDate", System.currentTimeMillis()).plus(172800000)
 
         lifecycleScope.launch {
             val summary = withContext(Dispatchers.IO) {
                 db.workDao().getHoursSumByTypeWithName(startDate, endDate)
             }
             adapter.submitList(summary)
-            println("DEBUG: SummaryActivity got ${summary.size} items")
-            summary.forEach { println(it) }
-            adapter.submitList(summary)
-
         }
-
-
     }
 }

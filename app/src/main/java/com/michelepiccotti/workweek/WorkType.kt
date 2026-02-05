@@ -7,7 +7,8 @@ import androidx.room.PrimaryKey
 data class WorkType(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val name: String,        // Esempio: "Lavoro", "Ferie", "Malattia"
-    val colorHex: String,    // Esempio: "#4CAF50" (verde), "#F44336" (rosso)
-    val isDefault: Boolean = false // Utile per proteggere i tipi predefiniti dall'eliminazione
+    val name: String,
+    val colorHex: String,
+    val isDefault: Boolean = false
 )
+

@@ -3,7 +3,6 @@ package com.michelepiccotti.workweek
 import android.app.DatePickerDialog
 import android.graphics.Typeface
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.Toast
@@ -14,41 +13,45 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
-class AddRecordActivity : AppCompatActivity() {
+class ActivityAddRecord : AppCompatActivity() {
 
     private lateinit var db: AppDatabase
     private var selectedTypeId: Int = -1
     private var selectedDate: Long = System.currentTimeMillis()
-    private var today = Calendar.getInstance()
+    private val today = Calendar.getInstance()
     private val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_record)
-        val etDate = findViewById<TextInputEditText>(R.id.etDate)
 
-        // mostra subito la data selezionata (oggi di default)
+        val etDate = findViewById<TextInputEditText>(R.id.etDate)
+        val etHours = findViewById<TextInputEditText>(R.id.etHours)
+        val btnSave = findViewById<Button>(R.id.btnSave)
+        val typeDropdown = findViewById<AutoCompleteTextView>(R.id.typeDropdown)
+
+        db = AppDatabase.getDatabase(this)
+
         etDate.setText(sdf.format(Date(selectedDate)))
         etDate.setOnClickListener {
-            val calendar = Calendar.getInstance().apply {
-                timeInMillis = selectedDate
-            }
+            val calendar = Calendar.getInstance().apply { timeInMillis = selectedDate }
 
             DatePickerDialog(
                 this,
                 { _, year, month, day ->
                     calendar.set(year, month, day)
-                    selectedDate = calendar.timeInMillis   // 🎯 QUI POPOLI selectedDate
+                    selectedDate = calendar.timeInMillis
                     etDate.setText(sdf.format(calendar.time))
 
                     if (calendar.get(Calendar.YEAR) == today.get(Calendar.YEAR)
-                        && calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)) {
-                        //etDate.setBackgroundColor(resources.getColor(R.color.black))
+                        && calendar.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR)
+                    ) {
                         etDate.setTypeface(null, Typeface.BOLD)
                     } else {
-                        //etDate.setBackgroundColor(resources.getColor(R.color.light_green))
                         etDate.setTypeface(null, Typeface.NORMAL)
                     }
                 },
@@ -58,28 +61,21 @@ class AddRecordActivity : AppCompatActivity() {
             ).show()
         }
 
-        db = AppDatabase.getDatabase(this)
-
-        val etHours = findViewById<TextInputEditText>(R.id.etHours)
         etHours.setText("8")
-        val btnSave = findViewById<Button>(R.id.btnSave)
-        val typeDropdown = findViewById<AutoCompleteTextView>(R.id.typeDropdown)
 
-        // 1. Carichiamo i tipi dal Database per popolare il menu a tendina
         lifecycleScope.launch {
             val typesFromDb = withContext(Dispatchers.IO) {
                 db.workDao().getAllTypes()
             }
 
             if (typesFromDb.isNotEmpty()) {
-                val adapter = ArrayAdapter(
-                    this@AddRecordActivity,
+                val adapter = android.widget.ArrayAdapter(
+                    this@ActivityAddRecord,
                     android.R.layout.simple_dropdown_item_1line,
                     typesFromDb.map { it.name }
                 )
                 typeDropdown.setAdapter(adapter)
 
-                // POPOLARE IL VALORE DI DEFAULT
                 val defaultType = typesFromDb.firstOrNull { it.isDefault }
                 if (defaultType != null) {
                     selectedTypeId = defaultType.id
@@ -92,9 +88,8 @@ class AddRecordActivity : AppCompatActivity() {
             }
         }
 
-        // 2. Gestione del salvataggio
         btnSave.setOnClickListener {
-            val hoursStr = etHours.text.toString()
+            val hoursStr = etHours.text?.toString()?.trim().orEmpty()
 
             if (hoursStr.isEmpty() || selectedTypeId == -1) {
                 Toast.makeText(this, "Inserisci ore e seleziona un tipo", Toast.LENGTH_SHORT).show()
@@ -110,8 +105,9 @@ class AddRecordActivity : AppCompatActivity() {
                 db.workDao().insertRecord(newRecord)
 
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@AddRecordActivity, "Salvato!", Toast.LENGTH_SHORT).show()
-                    finish() // Torna alla Home
+                    Toast.makeText(this@ActivityAddRecord, "Salvato!", Toast.LENGTH_SHORT).show()
+                    setResult(RESULT_OK)
+                    finish()
                 }
             }
         }

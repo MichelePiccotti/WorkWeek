@@ -9,12 +9,15 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 
-class SummaryAdapter : ListAdapter<HoursByType, SummaryAdapter.SummaryViewHolder>(object : DiffUtil.ItemCallback<HoursByType>() {
+class SummaryAdapter :
+    ListAdapter<HoursByType, SummaryAdapter.SummaryViewHolder>(object : DiffUtil.ItemCallback<HoursByType>() {
+        override fun areItemsTheSame(oldItem: HoursByType, newItem: HoursByType) =
+            oldItem.typeId == newItem.typeId
 
-    override fun areItemsTheSame(oldItem: HoursByType, newItem: HoursByType) = false
-    override fun areContentsTheSame(oldItem: HoursByType, newItem: HoursByType) = false
-})
-{
+        override fun areContentsTheSame(oldItem: HoursByType, newItem: HoursByType) =
+            oldItem == newItem
+    }) {
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SummaryViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_summary, parent, false)
@@ -37,7 +40,7 @@ class SummaryAdapter : ListAdapter<HoursByType, SummaryAdapter.SummaryViewHolder
             } catch (e: Exception) {
                 tvType.setTextColor(Color.BLACK)
             }
-            println("DEBUG: SummaryAdapter new item ${item.typeName}")
         }
     }
 }
+

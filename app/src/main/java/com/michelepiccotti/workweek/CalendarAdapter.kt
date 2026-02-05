@@ -34,9 +34,9 @@ class CalendarAdapter(
 
         val color = when {
             item.totalHours == 0.0 -> Color.TRANSPARENT
-            item.totalHours <= 4 -> Color.parseColor("#FFCDD2")
-            item.totalHours <= 8 -> Color.parseColor("#FFF9C4")
-            else -> Color.parseColor("#C8E6C9")
+            item.totalHours <= 4 -> Color.parseColor("#FF8A80")   // rosso tenue
+            item.totalHours <= 8 -> Color.parseColor("#FFD180")   // arancio chiaro
+            else -> Color.parseColor("#A5D6A7")         // verde pastello
         }
 
         holder.tvDay.background.setTint(color)

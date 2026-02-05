@@ -22,6 +22,12 @@
             android:titleTextColor="@android:color/white" />
     </com.google.android.material.appbar.AppBarLayout>
 
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="100dp"
+        />
+
     <!-- CONTENUTO SCORREVOLE -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollContent"
@@ -36,10 +42,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <View
-                android:id="@+id/Space"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"/>
             <!-- DATE PICKERS FISSI -->
             <LinearLayout
                 android:id="@+id/headerDates"
@@ -56,7 +58,7 @@
                     android:hint="Data Inizio">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etStartDate"
+                        android:id="@+id/etMonthDate"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:focusable="false"
@@ -66,21 +68,6 @@
                 <View
                     android:layout_width="16dp"
                     android:layout_height="wrap_content"/>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="Data Fine">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etEndDate"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:focusable="false"
-                        android:clickable="true"/>
-                </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
 
@@ -113,13 +100,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="24dp"
-        android:layout_marginStart="100dp"
         android:contentDescription="Calendario"
         app:backgroundTint="?attr/colorPrimary"
         app:srcCompat="@android:drawable/ic_menu_my_calendar"
         app:tint="@android:color/white"
-        app:layout_anchor="@id/Space"
-        app:layout_anchorGravity="center|start"/>
+        app:layout_anchor="@id/appBar"
+        app:layout_anchorGravity="bottom|start"/>
 
     <!-- FAB AGGIUNGI -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -131,7 +117,7 @@
         app:backgroundTint="?attr/colorPrimary"
         app:srcCompat="@android:drawable/ic_input_add"
         app:tint="@android:color/white"
-        app:layout_anchor="@id/Space"
-        app:layout_anchorGravity="center|end"/>
+        app:layout_anchor="@id/appBar"
+        app:layout_anchorGravity="bottom|end"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
